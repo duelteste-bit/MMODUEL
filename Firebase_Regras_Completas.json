@@ -1,0 +1,45 @@
+{
+  "rules": {
+    "rooms": {
+      "$w": {
+        ".read": true,
+        ".write": true,
+        "events": {
+          ".indexOn": [
+            "t"
+          ]
+        },
+        "hs": {
+          ".indexOn": [
+            "lv"
+          ]
+        }
+      }
+    },
+    "valdren": {
+      "players": {
+        "$uid": {
+          "characters": {
+            ".read": "auth != null && auth.uid === $uid",
+            "$slot": {
+              ".write": "auth != null && auth.uid === $uid && $slot.matches(/^s[1-5]$/)",
+              ".validate": "newData.hasChildren(['v', 'save', 'updatedAt'])",
+              "v": {
+                ".validate": "newData.val() === 1"
+              },
+              "save": {
+                ".validate": "newData.isString() && newData.val().length > 1 && newData.val().length <= 1000000"
+              },
+              "updatedAt": {
+                ".validate": "newData.isNumber() && newData.val() <= now && newData.val() >= now - 60000"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
