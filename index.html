@@ -822,7 +822,7 @@ body.gm-mode .qdock{display:none}
 </style>
 <div class="app">
   <header class="bar">
-    <div class="brand"><h1>VALDREN</h1><span>O VÉU NEGRO<br>DARK FANTASY · 3D</span></div>
+    <div class="brand"><h1>VALDREN</h1><span>O VÉU NEGRO<br><b id="brand-on" title="Jogadores no mundo agora" style="font-weight:700;color:#9d927c;white-space:nowrap">● offline</b></span></div>
     <div class="bar-r">
       <div class="clock" id="clock" title="Hora do mundo">08:00</div>
       <div class="zoom" role="group" aria-label="Zoom da câmera">
@@ -1669,7 +1669,7 @@ async function srvConnect(){if(SRV.started)return;if(!SERVER_URL&&!FB_DB_URL&&!/
     const O=FL[0].occ;for(let i=ents.length-1;i>=0;i--){const e=ents[i];if(e.kind==='mon'&&!(e.z|0)){O[idx(e.x,e.y)]=0;byId.delete(e.id);ents.splice(i,1)}}if(target&&target.kind==='mon')target=null;
     const map=new Map();SRV.map=map;
     room.state.mons.onAdd((sm,key)=>{const d=MON[sm.t];if(!d)return;const e={kind:'mon',type:sm.t,srv:key,x:sm.x,y:sm.y,fx:sm.x,fy:sm.y,rx:sm.x,ry:sm.y,mt:1,moving:false,face:1,hp:sm.hp,maxHp:sm.mh,speed:300,home:{x:sm.x,y:sm.y},dead:sm.dead,flash:0,aggro:false,ph:R()*6,z:0};e.id=nextId++;ents.push(e);byId.set(e.id,e);if(!e.dead)O[idx(e.x,e.y)]=e.id;map.set(key,e);
-      sm.onChange(()=>{if(sm.x!==e.x||sm.y!==e.y){if(!e.dead)O[idx(e.x,e.y)]=0;const far=Math.max(Math.abs(sm.x-e.x),Math.abs(sm.y-e.y))>2;e.fx=far?sm.x:e.x;e.fy=far?sm.y:e.y;e.x=sm.x;e.y=sm.y;e.mt=far?1:0;e.moving=!far;e.dur=d?((MSPD[e.type]||120)>0?SPDF/(MSPD[e.type]||120):300):300;if(!sm.dead)O[idx(e.x,e.y)]=e.id}
+      sm.onChange(()=>{if(sm.x!==e.x||sm.y!==e.y){if(!e.dead)O[idx(e.x,e.y)]=0;const far=Math.max(Math.abs(sm.x-e.x),Math.abs(sm.y-e.y))>2;e.fx=far?sm.x:e.x;e.fy=far?sm.y:e.y;e.x=sm.x;e.y=sm.y;e.mt=far?1:0;e.moving=!far;e.dur=clamp(now-(e.lu||now-400),180,700);e.lu=now;if(!sm.dead)O[idx(e.x,e.y)]=e.id}
         if(sm.hp<e.hp&&!e.dead){e.flash=.12;e.aggro=true}e.hp=sm.hp;e.maxHp=sm.mh;if(sm.wind&&!e.wind){e.wind=now;e.windDur=d.boss?640:d.diff>=4?460:d.diff>=3?340:240}else if(!sm.wind)e.wind=0;
         if(sm.dead&&!e.dead)srvDeath(e);else if(!sm.dead&&e.dead){e.dead=false;e.x=e.fx=e.rx=sm.x;e.y=e.fy=e.ry=sm.y;e.mt=1;e.hp=sm.hp;O[idx(e.x,e.y)]=e.id}})});
     room.onMessage('matk',v=>{const e=map.get(v.id);if(e){e.lunge=now;e.wind=0}});
@@ -4326,7 +4326,7 @@ function render2d(t){const fT0=performance.now();v3hide();V3.active=false;if(!V3
     EL.push([M,yb,e===P?-1:Math.max(Math.abs(e.x-P.x),Math.abs(e.y-P.y))]);
     L.push({y:by,f:()=>{const S=r2dEnt(M,t,yb);if(!S.cv)return;const cs=S.cell,ppt=R2D.EPPT,k=T/ppt;if(e.dead)ctx.globalAlpha=Math.max(0,1-Math.max(0,now-(e.diedAt||now)-500)/400);ctx.drawImage(S.cv,bx-cs/2*k,by-lo-(cs-(S.mg||.7)*ppt)*k,cs*k,cs*k);ctx.globalAlpha=1}})}
   /* animação com orçamento de tempo: herói e quem está mais perto primeiro. Máquina rápida anima todos a 30 q/s; a lenta mantém o FPS e só os distantes andam em menos quadros */
-  {const t0=performance.now();EL.sort((a,b)=>a[2]-b[2]);for(const it of EL){if(it[2]>=0&&performance.now()-t0>R2D.EBMS){R2D.eb=0;break}r2dEnt(it[0],t,it[1])}}
+  {const t0=performance.now();EL.sort((a,b)=>a[2]-b[2]);for(const it of EL){if(R2D.eb>0&&it[2]>=0&&performance.now()-t0>R2D.EBMS)R2D.eb=0;r2dEnt(it[0],t,it[1])}}
   L.sort((a,b)=>a.y-b.y);for(const it of L)it.f();
   r2dFxAir(ctx,t,vz);
   r2dBirds(ctx,t,vz,inCave,nd);
@@ -5188,7 +5188,8 @@ function sendChat(raw){const text=cleanText(raw);if(!text)return;if(/^\/p\s/i.te
   else chatSys('Você está jogando sozinho agora. Só você vê esta mensagem.')}
 let curTab='log';
 function setTab(t){curTab=t;$('log').hidden=t!=='log';$('chatlog').hidden=t!=='chat';$('chat-form').hidden=t!=='chat';$('tab-log').setAttribute('aria-selected',t==='log');$('tab-chat').setAttribute('aria-selected',t==='chat');if(t==='chat')$('tab-chat').classList.remove('ping')}
-function renderOnline(){const el=$('online');if(!el)return;const list=[...NET.peers.values()].sort((a,b)=>b.level-a.level);
+function brandOn(){const b=$('brand-on');if(!b)return;const n=NET.peers.size+1;b.textContent=NET.room?(NET.connected?`● ${n} online`:'● conectando…'):'● offline';b.style.color=NET.room&&NET.connected?'#9be07a':'#9d927c'}
+function renderOnline(){brandOn();const el=$('online');if(!el)return;const list=[...NET.peers.values()].sort((a,b)=>b.level-a.level);
   // só reconstrói a lista quando algo visível mudou (antes era refeita a cada passo do personagem)
   const key=[P.name,P.level,P.voc,!!NET.room,NET.connected,NP.id,DUEL.with,...list.map(e=>[e.name,e.level,e.voc,e.pt,e.cid].join(':'))].join('|');if(key===el._k){renderParty();return}el._k=key;el.textContent='';
   $('on-count').textContent=NET.room?(NET.connected?`${list.length+1} online`:'conectando'):'sozinho';
@@ -5490,6 +5491,8 @@ async function fbwInit(){if(!FB_DB_URL||!FIREBASE_CONFIG)return null;
     await new Promise(r=>{const t=setTimeout(r,3000);rt.ref('.info/serverTimeOffset').once('value',x=>{HOST.off=+x.val()||0;clearTimeout(t);r()})});
     FBW.fb=fb;FBW.rt=rt;FBW.ok=true;FBW.room=FirebaseBE.room.call({rt,fb,off:HOST.off,user:{uid:uid||FBW.id}},FB_WORLD);return FBW.room}catch(e){console.warn('Mundo compartilhado:',e);log('Mundo compartilhado indisponível: '+(e&&e.message||e),'c-dmg');return null}}
 const HOST={on:false,cur:null,off:0,iv:0,sim:null};
+/* timers de abas escondidas são estrangulados pelo navegador; o pulso de um Worker não é */
+function vdTick(fn,ms){let i=0;const fb=()=>{if(!i)i=setInterval(fn,ms)};try{const u=URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),'+ms+')'],{type:'text/javascript'})),w=new Worker(u);w.onmessage=()=>fn();w.onerror=()=>{w.terminate();fb()};return{stop(){w.terminate();clearInterval(i)}}}catch(e){fb();return{stop(){clearInterval(i)}}}}
 const sNow=()=>Date.now()+HOST.off;
 /* sala de monstros no mesmo formato do cliente Colyseus (state.mons.onAdd / onMessage / send) */
 function fbSrvRoom(){const R0=FBW.room,me=R0.me,base=FBW.rt.ref(`rooms/${FB_WORLD}`),monsRef=base.child('mons'),W0=JSON.parse(exportWorld());
@@ -5500,13 +5503,12 @@ function fbSrvRoom(){const R0=FBW.room,me=R0.me,base=FBW.rt.ref(`rooms/${FB_WORL
   R0.on('srvc',m=>{const d=m.data||{};if(HOST.on&&HOST.sim&&d.ty==='hit')HOST.sim.hit(m.peer,d.d||{})});
   const send=(to,ty,d)=>{if(to===me||to==='*')disp(ty,d);if(to!==me)R0.emit('srv',{to,ty,d}).catch(()=>{})};
   const hr=base.child('host');let tryAt=0;
-  const claim=()=>{if(Date.now()<tryAt)return;if(document.hidden&&HOST.cur)return;tryAt=Date.now()+2500;hr.transaction(v=>(!v||!v.id||v.id===me||sNow()-(+v.t||0)>9000)?{id:me,t:sNow()}:undefined).catch(()=>{})};
-  document.addEventListener('visibilitychange',()=>{if(document.hidden&&HOST.on&&NET.peers.size){hostEnd();tryAt=Date.now()+8000;hr.transaction(v=>v&&v.id===me?null:undefined).catch(()=>{})}});
+  const claim=()=>{if(Date.now()<tryAt)return;tryAt=Date.now()+2500;hr.transaction(v=>(!v||!v.id||v.id===me||sNow()-(+v.t||0)>9000)?{id:me,t:sNow()}:undefined).catch(()=>{})};
   hr.on('value',s=>{const v=s.val();HOST.cur=v&&v.id||null;if(HOST.cur===me&&!HOST.on)hostBegin(base,me,W0,send,hr);else if(HOST.cur!==me&&HOST.on)hostEnd();if(!HOST.cur)claim()});
-  setInterval(()=>{const v=HOST.cur;if(HOST.on){hr.transaction(v=>v&&v.id===me?{id:me,t:sNow()}:undefined).catch(()=>{});if((HOST.pc=(HOST.pc||0)+1)%10===0)try{base.child('events').orderByChild('t').endAt(sNow()-30000).limitToFirst(300).once('value',s=>{const o={};s.forEach(c=>{o[c.key]=null});if(Object.keys(o).length)base.child('events').update(o)})}catch(e){}}else if(!v)claim();else hr.once('value',s=>{const q=s.val();if(!q||sNow()-(+q.t||0)>9000)claim()})},3000);
+  vdTick(()=>{const v=HOST.cur;if(HOST.on){hr.transaction(v=>v&&v.id===me?{id:me,t:sNow()}:undefined).catch(()=>{});if((HOST.pc=(HOST.pc||0)+1)%10===0)try{base.child('events').orderByChild('t').endAt(sNow()-30000).limitToFirst(300).once('value',s=>{const o={};s.forEach(c=>{o[c.key]=null});if(Object.keys(o).length)base.child('events').update(o)})}catch(e){}}else if(!v)claim();else hr.once('value',s=>{const q=s.val();if(!q||sNow()-(+q.t||0)>9000)claim()})},3000);
   return{state:{mons:{onAdd(cb){addCbs.push(cb);for(const [k,sm] of sms)cb(sm,k)}}},onMessage(ty,f){(hand[ty]=hand[ty]||[]).push(f)},
     send(ty,d){if(ty==='hit'){if(HOST.on&&HOST.sim)HOST.sim.hit(me,d);else R0.emit('srvc',{ty,d}).catch(()=>{})}},onLeave(){}}}
-function hostEnd(){HOST.on=false;clearInterval(HOST.iv);HOST.sim=null}
+function hostEnd(){HOST.on=false;if(HOST.iv&&HOST.iv.stop)HOST.iv.stop();HOST.iv=0;HOST.sim=null}
 async function hostBegin(base,me,W0,send,hr){HOST.on=true;hr.onDisconnect().remove();
   const F=FL[0],Wd=W0.w,H0=W0.h,PASS=i=>!BLOCK_G.has(F.ground[i])&&!BLOCK_O.has(F.obj[i]),WALL=i=>WALLT(F.ground[i]),PZ=i=>!!F.pz[i],id2=(x,y)=>y*Wd+x,ib=(x,y)=>x>=0&&y>=0&&x<Wd&&y<H0,ch=(a,b)=>Math.max(Math.abs(a.x-b.x),Math.abs(a.y-b.y)),ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),N8=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]],RG={none:1,knight:1,paladin:5,sorcerer:6};
   const los=(a,b)=>{let x0=a.x,y0=a.y;const x1=b.x,y1=b.y,dx=Math.abs(x1-x0),dy=Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx-dy,n=0;while((x0!==x1||y0!==y1)&&n++<60){const e2=2*e;if(e2>-dy){e-=dy;x0+=sx}if(e2<dx){e+=dx;y0+=sy}if((x0!==x1||y0!==y1)&&WALL(id2(x0,y0)))return false}return true};
@@ -5527,7 +5529,7 @@ async function hostBegin(base,me,W0,send,hr){HOST.on=true;hr.onDisconnect().remo
     const now=Date.now(),b=pb.get(c)||{n:8,t:now};b.n=Math.min(8,b.n+(now-b.t)/125);b.t=now;pb.set(c,b);if(b.n<1)return;b.n-=1;if(ch(p,m)>(RG[p.voc]||1)+2||PZ(id2(p.x,p.y)))return;
     const dmg=Math.max(0,Math.min(60+p.lv*13,Math.round(+v.d||0)));if(!dmg)return;m.hp=Math.max(0,m.hp-dmg);dirty.add(String(v.id));a.dmg.set(c,(a.dmg.get(c)||0)+dmg);if(!a.tgt){a.tgt=c;a.ret=false}if(m.hp<=0)kill(String(v.id),m,a,PL)}};
   const flush=()=>{if(!dirty.size)return;const o={};for(const k of dirty){const m=mons.get(k);o[k]={t:m.t,x:m.x,y:m.y,hp:m.hp,mh:m.mh,dead:m.dead,wind:m.wind}}dirty.clear();base.child('mons').update(o).catch(()=>{})};
-  HOST.iv=setInterval(()=>{if(!HOST.on)return;const now=Date.now(),PL=pls();let i=0;
+  HOST.iv=vdTick(()=>{if(!HOST.on)return;const now=Date.now(),PL=pls();let i=0;
     for(const [k,m] of mons){i++;const a=ai.get(k),d=W0.mon[m.t],s0=m.x+','+m.y+','+m.hp+','+m.dead+','+m.wind;
       if(m.dead){if(now>=a.respawnAt&&!occ[id2(a.home.x,a.home.y)]&&![...PL.values()].some(p=>ch(p,a.home)<=7)){m.dead=false;m.hp=m.mh;m.x=a.home.x;m.y=a.home.y;occ[id2(m.x,m.y)]=i;a.ret=false}}
       else{let p=a.tgt&&PL.get(a.tgt);const hd=ch(m,a.home),leash=d.aggro+5;
@@ -6166,7 +6168,7 @@ function rgb(c){
  const known={white:[255,255,255],black:[0,0,0],transparent:[0,0,0]};return known[c.toLowerCase()]||[255,255,255];
 }
 
-console.info('VALDREN_BUILD: mundo-compartilhado-r4');
+console.info('VALDREN_BUILD: mundo-compartilhado-r5');
 /* ---------- boot ---------- */
 function start(data){
   buildIcons();genMap();decorate();thinTrees();vd3ScatterDecor();vd5ExpandWorld();veilRebuildWorld();auBuild();buildHeights();bakeIcons3();
