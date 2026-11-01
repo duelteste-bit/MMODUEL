@@ -5183,7 +5183,28 @@ function peerAct(m){if(m.sameTab)return;const e=NET.peers.get(m.peer);if(!e||e.g
 function netFx(k,x,y,x2,y2){if(NET.room&&NET.connected&&FX_OK.has(k)){const d={k,x,y,z:curZ};if(x2!=null)d.x2=x2;if(y2!=null)d.y2=y2;try{const p=NET.room.emit('fx',d);if(p&&p.catch)p.catch(()=>{})}catch(e){}}}
 function chatLine(name,text,me){const p=document.createElement('p');p.className=me?'c-say me':'c-say';const t=document.createElement('time');t.textContent=clockStr();const b=document.createElement('b');b.textContent=name+': ';p.append(t,b,text);const L=$('chatlog');L.append(p);while(L.children.length>120)L.firstChild.remove();L.scrollTop=L.scrollHeight;if(curTab!=='chat')$('tab-chat').classList.add('ping')}
 function chatSys(text){const p=document.createElement('p');p.className='c-dim';p.textContent=text;$('chatlog').append(p);$('chatlog').scrollTop=1e9}
-function sendChat(raw){const text=cleanText(raw);if(!text)return;if(/^\/p\s/i.test(text)){npChat(text.slice(3).trim());return}P.say={text,t:now};chatLine(P.name,text,true);
+/* ---- debug de nível e ouro: /debug ou F9 abre o painel; /level N e /gold N (ou /gold +N) no chat ----
+   Liberado ao abrir o jogo pelo arquivo/localhost e, online, só para as contas em DBG_ADMINS. */
+const DBG_ADMINS=['gustavonunes2018@gmail.com'];
+function dbgOk(){if(!/^https?:$/.test(location.protocol)||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))return true;const u=FirebaseBE&&FirebaseBE.user;return !!(u&&u.email&&DBG_ADMINS.includes(u.email.toLowerCase()))}
+function dbgLevel(n){n=clamp(Math.round(+n||1),1,500);if(n>P.level){gainXp(expFor(n)-P.xp,true);return}
+  const old=P.level;P.level=n;P.xp=expFor(n);P.pts=Math.max(0,(P.pts|0)-2*(old-n));P.hp=maxHp();P.mana=maxMp();P.speed=spdVal();dirtyHud=true;log(`[Debug] Nível ajustado para ${n}.`,'c-sys');save();cloudSave();pushScore()}
+function dbgGold(v){const t=String(v).trim();const add=/^[+-]/.test(t),n=Math.round(+t)||0;P.gold=Math.max(0,add?P.gold+n:n);dirtyHud=dirtyInv=true;log(`[Debug] Ouro: ${P.gold}.`,'c-sys');save();cloudSave()}
+function dbgCmd(text){const m=/^\/(debug|level|nivel|gold|ouro)\b\s*(\S*)/i.exec(text);if(!m)return false;
+  if(!dbgOk()){log('Comando de debug disponível só para administradores.','c-dim');return true}
+  const c=m[1].toLowerCase();if(c==='debug')dbgPanel();else if(c==='level'||c==='nivel')dbgLevel(m[2]);else dbgGold(m[2]||'+1000');return true}
+function dbgPanel(){let el=$('dbgp');if(el){el.remove();return}if(!dbgOk())return log('Comando de debug disponível só para administradores.','c-dim');
+  el=document.createElement('div');el.id='dbgp';el.style.cssText='position:fixed;right:16px;top:90px;z-index:9999;width:250px;padding:12px 14px;background:#141a1c;border:1px solid #6b5a36;border-radius:4px;box-shadow:0 8px 28px #000c;font:13px Georgia,serif;color:#e8dcc0';
+  const h=document.createElement('div');h.style.cssText='display:flex;justify-content:space-between;align-items:center;color:#e6c17c;font-size:15px;margin-bottom:8px';h.textContent='Debug';const x=document.createElement('button');x.type='button';x.className='btn sm';x.textContent='×';x.onclick=()=>el.remove();h.append(x);el.append(h);
+  const st=document.createElement('div');st.style.cssText='color:#9d927c;margin-bottom:8px';const upd=()=>{st.textContent=`Nível ${P.level} · ${P.gold} de ouro`};upd();el.append(st);
+  const row=(lab,def,btns)=>{const r=document.createElement('div');r.style.cssText='display:flex;gap:4px;align-items:center;margin:6px 0;flex-wrap:wrap';const l=document.createElement('span');l.style.cssText='width:44px';l.textContent=lab;const i=document.createElement('input');i.type='number';i.value=def;i.style.cssText='width:80px;padding:3px 5px;background:#0e1412;color:#e8dcc0;border:1px solid #3a3226';i.addEventListener('keydown',e=>e.stopPropagation());r.append(l,i);
+    for(const [t,f] of btns){const b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent=t;b.onclick=()=>{f(i.value);upd()};r.append(b)}el.append(r)};
+  row('Nível',Math.min(500,P.level+1),[['Definir',v=>dbgLevel(v)],['+1',()=>dbgLevel(P.level+1)],['+10',()=>dbgLevel(P.level+10)]]);
+  row('Ouro',10000,[['Somar',v=>dbgGold('+'+(+v||0))],['Definir',v=>dbgGold(String(+v||0))]]);
+  const r=document.createElement('div');r.style.cssText='display:flex;gap:4px;margin-top:8px';const cu=document.createElement('button');cu.type='button';cu.className='btn sm';cu.textContent='Curar vida e mana';cu.onclick=()=>{P.hp=maxHp();P.mana=maxMp();dirtyHud=true};r.append(cu);el.append(r);
+  document.body.append(el)}
+addEventListener('keydown',ev=>{if(ev.key==='F9'&&!(document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName))){ev.preventDefault();dbgPanel()}});
+function sendChat(raw){if(dbgCmd(String(raw||'').trim()))return;const text=cleanText(raw);if(!text)return;if(/^\/p\s/i.test(text)){npChat(text.slice(3).trim());return}P.say={text,t:now};chatLine(P.name,text,true);
   if(NET.room&&NET.connected)NET.room.emit('chat',{n:P.name,t:text}).catch(e=>{if(e&&e.code==='not_permitted')chatSys('Seu acesso a este jogo não permite falar no chat. O dono pode dar acesso de Colaborador pelo menu Compartilhar.')});
   else chatSys('Você está jogando sozinho agora. Só você vê esta mensagem.')}
 let curTab='log';
