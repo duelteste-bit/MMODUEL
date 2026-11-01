@@ -1676,7 +1676,7 @@ async function srvConnect(){if(SRV.started)return;if(!SERVER_URL&&!FB_DB_URL&&!/
     room.onMessage('mhit',v=>{const e=map.get(v.id);if(!e||!P.alive)return;const d=MON[e.type];faceTo(e,P);hurtPlayer(Math.round((+v.d||0)-defVal()*(.5+R()*.5)),artName(d.name),null,true);if(v.poison&&P.alive&&R()<v.poison[0]){if(!P.poison)log('Você foi envenenado.','c-dmg');P.poison={ticks:6,dmg:v.poison[1],next:now+1500}}});
     room.onMessage('mshot',v=>{const e=map.get(v.id);if(!e||!P.alive)return;const d=MON[e.type],rg=d.ranged||{};sfx(rg.arrow?'bow':'fire');projs.push({sx:e.rx*T+T/2,sy:e.ry*T+T/2,tgt:P,t:0,dur:120*Math.max(2,cheb(e,P)),col:rg.col||'#ff6a1a',arrow:rg.arrow,onHit:()=>{if(!rg.arrow)burst('fire',P.rx*T+T/2,P.ry*T+T/2);hurtPlayer(Math.round((+v.d||0)-defVal()*.3),`${d.name} (${rg.msg||'ataque'})`,rg.hc||'#ff8a2a')}})});
     room.onMessage('dodge',()=>{ftext(P,'Esquivou!','#9ae8ff');sfx('miss')});
-    room.onMessage('reward',v=>{const e=map.get(v.id);if(e)killMon(e,{xp:Math.max(0,v.xp|0),gold:Math.max(0,v.gold|0),loot:Array.isArray(v.loot)?v.loot.slice(0,12):[]})});
+    room.onMessage('reward',v=>{if(v.sh){const x=Math.max(0,v.xp|0);if(x&&P.alive){log('Seu grupo abateu uma criatura: experiência dividida.','c-dim');gainXp(x,false,true)}return}const e=map.get(v.id);if(e)killMon(e,{xp:Math.max(0,v.xp|0),gold:Math.max(0,v.gold|0),loot:Array.isArray(v.loot)?v.loot.slice(0,12):[]})});
     room.onLeave(()=>{SRV.room=null;log('Conexão com o servidor do mundo perdida. Atualize a página para reconectar.','c-dmg')});
     setInterval(()=>{if(SRV.room)SRV.room.send('stats',{lv:P.level,atk:atkVal(),voc:P.voc,name:P.name})},10000);
     room.send('pos',{x:P.x,y:P.y,z:P.z|0,alive:P.alive});log('Conectado ao servidor do mundo: monstros e saque agora são compartilhados.','c-sys')}
@@ -2394,7 +2394,7 @@ function damageMon(m,dmg,src){if(m.kind==='mon'&&!los(src||P,m))return;if(dmg>0)
 function killMon(m,sv){if(!m.dead&&!m.veilEscort)veilLoreKill(m);const d=MON[m.type];if(sv){if(!m.dead)srvDeath(m)}else{sfx('kill');m.dead=true;m.diedAt=now;decal({k:'blood',x:m.rx*T+T/2,y:m.ry*T+T/2+6,r:(d.boss?30:14)+R()*6,dur:9000,col:d.blood||'#7a1410'});amb3fx('death',m,d.boss?'#ffd060':undefined);m.hp=0;occ[idx(m.x,m.y)]=0;m.respawnAt=now+(d.respawn||25000+R()*25000)}{const w0=P.wear||0;P.wear=Math.min(100,w0+(d.diff||1)*.5+(d.boss?6:0));if(w0<80&&P.wear>=80)log('Seu equipamento está gasto (−10% de ataque e defesa). O Ferreiro Bram ou Lyra consertam.','c-dmg');if(w0<100&&P.wear>=100)log('Seu equipamento está danificado (−25% de ataque e defesa). Conserte com o Ferreiro Bram ou Lyra.','c-dmg');dirtyHud=true}
   const items=[];
   if(target===m)target=null;
-  P.kills++;if(m.type==='bear'&&!m.regrown){vd4Normalize();const prev=P.vd4.bearKills;P.vd4.bearKills++;if(prev<20&&P.vd4.bearKills>=20){P.vd4.unlocked.bear=true;showBanner('Montaria desbloqueada!','Urso Pardo · alugue com o Cavalariço Berno');log('Missão: 20 ursos derrotados! Você desbloqueou o aluguel de Urso Pardo.','c-sys');save()}}comboKill();if(!m.regrown&&!sv)runeDrop(m,d);if(!m.regrown)partyXp(sv?sv.xp:Math.round(d.xp*(m.kX||1)*comboMult()));/* cabeça de hidra rebrotada não dá recompensa */
+  P.kills++;if(m.type==='bear'&&!m.regrown){vd4Normalize();const prev=P.vd4.bearKills;P.vd4.bearKills++;if(prev<20&&P.vd4.bearKills>=20){P.vd4.unlocked.bear=true;showBanner('Montaria desbloqueada!','Urso Pardo · alugue com o Cavalariço Berno');log('Missão: 20 ursos derrotados! Você desbloqueou o aluguel de Urso Pardo.','c-sys');save()}}comboKill();if(!m.regrown&&!sv)runeDrop(m,d);if(!m.regrown){if(sv)gainXp(sv.xp,false,true);else partyXp(Math.round(d.xp*(m.kX||1)*comboMult()))}/* cabeça de hidra rebrotada não dá recompensa */
   // ouro vai direto para a bolsa (menos cliques em corpos só com moedas)
   const gold=m.regrown?0:sv?sv.gold|0:Math.round(ri(d.gold[0],d.gold[1])*(m.kX||1));if(gold>0){P.gold+=gold;later(260,()=>ftext(P,`+${gold} ouro`,'#ffd36a'));sfx('coin');burst('coin',m.rx*T+T/2,m.ry*T+T/2);dirtyHud=true;dirtyInv=true}
   const luck=has('luck')?1.25:1;
@@ -5476,7 +5476,7 @@ const FirebaseBE={id:'firebase',fb:null,auth:null,fs:null,rt:null,user:null,
 /* ---- mundo compartilhado no Firebase Realtime Database (sem servidor próprio) ----
    Um jogador vira o anfitrião automaticamente e simula os monstros do térreo; os outros recebem posições, vida, mortes, XP e saque.
    Se o anfitrião sair, outro assume em poucos segundos. */
-const FB_DB_URL=(FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL)||null,FB_WORLD='valdren-veu-negro-v1';
+const FB_DB_URL=(FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL)||null,FB_WORLD='valdren-veu-negro-v2';
 const FBW={fb:null,rt:null,room:null,ok:false,p:null,id:(()=>{try{let v=localStorage.getItem('vd_fbid');if(!v){v=rndHex(10);localStorage.setItem('vd_fbid',v)}return v}catch(e){return rndHex(10)}})(),hk(){return this.id+'_'+String(P.name||'x').replace(/[^\w]/g,'').slice(0,16)}};
 async function fbwInit(){if(!FB_DB_URL||!FIREBASE_CONFIG)return null;
   try{await FirebaseBE.load();const fb=FirebaseBE.fb;let rt,uid;
@@ -5496,13 +5496,14 @@ function fbSrvRoom(){const R0=FBW.room,me=R0.me,base=FBW.rt.ref(`rooms/${FB_WORL
   const addCbs=[],sms=new Map(),hand={},disp=(ty,d)=>(hand[ty]||[]).forEach(f=>f(d||{}));
   const up=s=>{const v=s.val();if(!v||typeof v!=='object')return;let sm=sms.get(s.key);if(!sm){sm={onChange(f){this._f=f}};Object.assign(sm,v);sms.set(s.key,sm);addCbs.forEach(cb=>cb(sm,s.key))}else{Object.assign(sm,v);if(sm._f)sm._f()}};
   monsRef.on('child_added',up);monsRef.on('child_changed',up);
-  R0.on('srv',m=>{const d=m.data||{};if(m.sameTab||m.peer!==HOST.cur||(d.to!==me&&d.to!=='*'))return;disp(d.ty,d.d)});
+  R0.on('srv',m=>{const d=m.data||{};if(m.sameTab||(HOST.cur&&m.peer!==HOST.cur&&d.ty!=='reward')||(d.to!==me&&d.to!=='*'))return;disp(d.ty,d.d)});
   R0.on('srvc',m=>{const d=m.data||{};if(HOST.on&&HOST.sim&&d.ty==='hit')HOST.sim.hit(m.peer,d.d||{})});
   const send=(to,ty,d)=>{if(to===me||to==='*')disp(ty,d);if(to!==me)R0.emit('srv',{to,ty,d}).catch(()=>{})};
   const hr=base.child('host');let tryAt=0;
-  const claim=()=>{if(Date.now()<tryAt)return;tryAt=Date.now()+2500;hr.transaction(v=>(!v||v.id===me||sNow()-(+v.t||0)>9000)?{id:me,t:sNow()}:undefined).catch(()=>{})};
-  hr.on('value',s=>{const v=s.val();HOST.cur=v&&v.id||null;if(HOST.cur===me&&!HOST.on)hostBegin(base,me,W0,send,hr);else if(HOST.cur!==me&&HOST.on)hostEnd();if(!v)claim()});
-  setInterval(()=>{const v=HOST.cur;if(HOST.on){hr.update({t:sNow()}).catch(()=>{});if((HOST.pc=(HOST.pc||0)+1)%10===0)try{base.child('events').orderByChild('t').endAt(sNow()-30000).limitToFirst(300).once('value',s=>{const o={};s.forEach(c=>{o[c.key]=null});if(Object.keys(o).length)base.child('events').update(o)})}catch(e){}}else if(!v)claim();else hr.once('value',s=>{const q=s.val();if(!q||sNow()-(+q.t||0)>9000)claim()})},3000);
+  const claim=()=>{if(Date.now()<tryAt)return;if(document.hidden&&HOST.cur)return;tryAt=Date.now()+2500;hr.transaction(v=>(!v||!v.id||v.id===me||sNow()-(+v.t||0)>9000)?{id:me,t:sNow()}:undefined).catch(()=>{})};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&HOST.on&&NET.peers.size){hostEnd();tryAt=Date.now()+8000;hr.transaction(v=>v&&v.id===me?null:undefined).catch(()=>{})}});
+  hr.on('value',s=>{const v=s.val();HOST.cur=v&&v.id||null;if(HOST.cur===me&&!HOST.on)hostBegin(base,me,W0,send,hr);else if(HOST.cur!==me&&HOST.on)hostEnd();if(!HOST.cur)claim()});
+  setInterval(()=>{const v=HOST.cur;if(HOST.on){hr.transaction(v=>v&&v.id===me?{id:me,t:sNow()}:undefined).catch(()=>{});if((HOST.pc=(HOST.pc||0)+1)%10===0)try{base.child('events').orderByChild('t').endAt(sNow()-30000).limitToFirst(300).once('value',s=>{const o={};s.forEach(c=>{o[c.key]=null});if(Object.keys(o).length)base.child('events').update(o)})}catch(e){}}else if(!v)claim();else hr.once('value',s=>{const q=s.val();if(!q||sNow()-(+q.t||0)>9000)claim()})},3000);
   return{state:{mons:{onAdd(cb){addCbs.push(cb);for(const [k,sm] of sms)cb(sm,k)}}},onMessage(ty,f){(hand[ty]=hand[ty]||[]).push(f)},
     send(ty,d){if(ty==='hit'){if(HOST.on&&HOST.sim)HOST.sim.hit(me,d);else R0.emit('srvc',{ty,d}).catch(()=>{})}},onLeave(){}}}
 function hostEnd(){HOST.on=false;clearInterval(HOST.iv);HOST.sim=null}
@@ -5514,11 +5515,13 @@ async function hostBegin(base,me,W0,send,hr){HOST.on=true;hr.onDisconnect().remo
   W0.spawns.forEach((s,i)=>{const d=W0.mon[s.t];if(!d)return;const k='m'+i,o=snap[k],m=o&&o.t===s.t?{t:s.t,x:o.x|0,y:o.y|0,hp:o.hp|0,mh:d.hp,dead:!!o.dead,wind:0}:{t:s.t,x:s.x,y:s.y,hp:d.hp,mh:d.hp,dead:false,wind:0};mons.set(k,m);
     ai.set(k,{home:{x:s.x,y:s.y},spd:s.spd||400,next:0,cd:0,cdR:0,wind:0,rw:0,tgt:null,ret:false,dmg:new Map(),respawnAt:m.dead?Date.now()+15000:0});if(!m.dead)occ[id2(m.x,m.y)]=i+1;dirty.add(k)});
   base.child('meta').set({sig,at:sNow()}).catch(()=>{});
-  const pls=()=>{const o=new Map();o.set(me,{x:P.x,y:P.y,z:P.z|0,alive:P.alive,lv:P.level,voc:P.voc});for(const [k,e] of NET.peers)o.set(k,{x:e.x,y:e.y,z:e.z|0,alive:!e.ghost,lv:e.level||1,voc:e.voc});return o};
+  const pls=()=>{const o=new Map();o.set(me,{x:P.x,y:P.y,z:P.z|0,alive:P.alive,lv:P.level,voc:P.voc,pt:NP.id||''});for(const [k,e] of NET.peers)o.set(k,{x:e.x,y:e.y,z:e.z|0,alive:!e.ghost,lv:e.level||1,voc:e.voc,pt:e.pt||''});return o};
   const step=(i,m,a,dx,dy,PL)=>{const nx=m.x+dx,ny=m.y+dy;if(!ib(nx,ny)||!PASS(id2(nx,ny))||PZ(id2(nx,ny))||occ[id2(nx,ny)])return false;for(const p of PL.values())if(!p.z&&p.x===nx&&p.y===ny)return false;occ[id2(m.x,m.y)]=0;m.x=nx;m.y=ny;occ[id2(nx,ny)]=i;a.next=Date.now()+a.spd*(dx&&dy?1.41:1);return true};
   const kill=(k,m,a,PL)=>{const d=W0.mon[m.t];m.dead=true;m.wind=0;occ[id2(m.x,m.y)]=0;a.respawnAt=Date.now()+(d.respawn||25000+Math.random()*25000);a.tgt=null;a.wind=0;a.rw=0;
     const tot=[...a.dmg.values()].reduce((s,v)=>s+v,0)||1;let top=null,tv=-1;for(const [sid,v] of a.dmg)if(v>tv){tv=v;top=sid}
-    for(const [sid,v] of a.dmg){const p=PL.get(sid);if(!p||ch(p,m)>15)continue;const msg={id:k,xp:Math.round(d.xp*Math.max(.3,v/tot)),gold:0,loot:[]};
+    const got=new Map();for(const [sid,v] of a.dmg){const p=PL.get(sid);if(!p||ch(p,m)>15)continue;const base=d.xp*Math.max(.3,v/tot);
+      const M=p.pt?[...PL].filter(([s2,q])=>s2===sid||(q.pt===p.pt&&q.alive&&!q.z&&ch(q,m)<=10)):[[sid,p]];const each=base*(1+.2*(M.length-1))/M.length;for(const [s2] of M)got.set(s2,(got.get(s2)||0)+each)}
+    for(const [sid,xp] of got){const msg={id:k,xp:Math.max(1,Math.round(xp)),gold:0,loot:[]};if(!a.dmg.has(sid))msg.sh=1;
       if(sid===top){msg.gold=ri(d.gold[0],d.gold[1]);for(const [id,c] of d.loot)if(Math.random()<c){const ex=msg.loot.find(e=>e[0]===id);if(ex)ex[1]++;else msg.loot.push([id,1])}}send(sid,'reward',msg)}a.dmg.clear()};
   HOST.sim={hit(c,v){const PL=pls(),p=PL.get(c);if(!p||!v||p.z)return;const m=mons.get(String(v.id)),a=ai.get(String(v.id));if(!m||!a||m.dead)return;
     const now=Date.now(),b=pb.get(c)||{n:8,t:now};b.n=Math.min(8,b.n+(now-b.t)/125);b.t=now;pb.set(c,b);if(b.n<1)return;b.n-=1;if(ch(p,m)>(RG[p.voc]||1)+2||PZ(id2(p.x,p.y)))return;
@@ -6163,7 +6166,7 @@ function rgb(c){
  const known={white:[255,255,255],black:[0,0,0],transparent:[0,0,0]};return known[c.toLowerCase()]||[255,255,255];
 }
 
-console.info('VALDREN_BUILD: mundo-compartilhado-r3');
+console.info('VALDREN_BUILD: mundo-compartilhado-r4');
 /* ---------- boot ---------- */
 function start(data){
   buildIcons();genMap();decorate();thinTrees();vd3ScatterDecor();vd5ExpandWorld();veilRebuildWorld();auBuild();buildHeights();bakeIcons3();
