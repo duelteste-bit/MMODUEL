@@ -1045,7 +1045,7 @@ body.gm-mode .qdock{display:none}
 <script src="vd-dados10.js"></script>
 <script src="vd-dados11.js"></script>
 <script src="vd-dados12.js"></script>
-<script src="vd-dados13.js"></script><script src="vd-dados14.js"></script><script src="vd-dados15.js"></script><script src="vd-dados16.js"></script>
+<script src="vd-dados13.js"></script><script src="vd-dados14.js"></script><script src="vd-dados15.js"></script><script src="vd-dados16.js"></script><script src="vd-dados17.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -3007,7 +3007,7 @@ function pnoise(n,cell,seed){const g=n/cell,L=[];for(let j=0;j<g;j++)for(let i=0
   for(let y=0;y<n;y++){const fy=y/cell,iy=Math.floor(fy),ty=sm(fy-iy);for(let x=0;x<n;x++){const fx=x/cell,ix=Math.floor(fx),tx=sm(fx-ix),a=L[(iy%g)*g+ix%g],b=L[(iy%g)*g+(ix+1)%g],c=L[((iy+1)%g)*g+ix%g],d=L[((iy+1)%g)*g+(ix+1)%g];o[y*n+x]=(a+(b-a)*tx)*(1-ty)+(c+(d-c)*tx)*ty}}return o}
 function ctex(c,rx=1,ry=1){const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=8;return t}
 /* texturas pintadas pelo usuário (512×512, pasta texturas/) — substituem a pintura por código no chão e nos telhados */
-const UTEX={crystal:__VD[13],brick:__VD[14],water:__VD[15],wood:__VD[16],metal:__VD[17],stone:__VD[18],dirt:__VD[19],ground:__VD[20],roof:__VD[21]};Object.assign(UTEX,{elwood:__VD[110],elroof:__VD[111],elgrass:__VD[112],elmarble:__VD[113],elstone:__VD[114],elplank:__VD[115]});
+const UTEX={crystal:__VD[13],brick:__VD[14],water:__VD[15],wood:__VD[16],metal:__VD[17],stone:__VD[18],dirt:__VD[19],ground:__VD[20],roof:__VD[21]};Object.assign(UTEX,{elwood:__VD[110],elroof:__VD[111],elgrass:__VD[150]||__VD[112],elforest:__VD[151]||__VD[112],elmarble:__VD[113],elstone:__VD[114],elplank:__VD[115]});
 const UTX={};function utex(k){if(UTX[k])return UTX[k];const t=new THREE.TextureLoader().load(UTEX[k]);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;return UTX[k]=t}
 // cópia própria (com repetição própria) — a água usa duas camadas animadas da mesma imagem
 function utexN(k,rx,ry){const t=new THREE.TextureLoader().load(UTEX[k]);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=8;return t}
@@ -4077,11 +4077,11 @@ const R2G=({[G]:['ground','#ecebe4'],[FG]:['ground','#a9b49c'],[ST]:['stone','#d
   [SA]:['dirt','#f0dca8',.1],[DS]:['dirt','#cdb98e'],[SN]:['stone','#ffffff',.55],[IC]:['crystal','#b8dcf0',.15],[WA]:['water','#a6e0e6',.16],[CF]:['stone','#8c8270'],
   [BR]:['wood','#d8c0a0'],[WF]:['wood','#ecd8bc'],[WL]:['stone','#c8c4bc'],[CW]:['stone','#7a8078'],[SR]:['stone','#9aa09c']});
 /* Vel'Mora (abaixo da linha 176): grama de musgo, mármore com frisos dourados e tábuas claras; 4º valor = tiles por repetição */
-const R2G_EL={...R2G,[G]:['elgrass','#ffffff',0,3],[FG]:['elgrass','#b4c4ac',0,3],[MB]:['elmarble','#ffffff',0,4],[BR]:['elplank','#f4ece4',0,2],[WF]:['elplank','#fff4e8',0,2]};
+const R2G_EL={...R2G,[G]:['elgrass','#a8ccb8',0,4],[FG]:['elforest','#b8d0c4',0,4],[MB]:['elmarble','#ffffff',0,4],[BR]:['elplank','#f4ece4',0,2],[WF]:['elplank','#fff4e8',0,2]};
 /* ordem de pintura: os de baixo primeiro (as bordas dos de cima avançam sobre eles) */
 const R2ORD=[WA,CF,MD,DS,SA,RD,ST,MB,BR,WF,IC,SN,G,FG,WL,CW,SR];
 const R2WALL=({[WL]:[1.55*WHK,'brick','#e8e4dc'],[CW]:[1.5,'stone','#6c7268'],[SR]:[1.6,'stone','#8e938c']});
-function r2dTexReady(){let ok=true;for(const k of ['ground','stone','dirt','water','wood','brick','roof','crystal','elwood','elroof','elgrass','elmarble','elstone','elplank']){let im=R2D.tex[k];if(!im){im=R2D.tex[k]=new Image();im.src=UTEX[k]}if(!im.complete||!im.naturalWidth)ok=false}return ok}
+function r2dTexReady(){let ok=true;for(const k of ['ground','stone','dirt','water','wood','brick','roof','crystal','elwood','elroof','elgrass','elforest','elmarble','elstone','elplank']){let im=R2D.tex[k];if(!im){im=R2D.tex[k]=new Image();im.src=UTEX[k]}if(!im.complete||!im.naturalWidth)ok=false}return ok}
 /* textura tingida (multiplica a cor do tipo e clareia neve/mármore) */
 function r2dTinted(k,col,lift){const key=k+col+(lift||0);if(R2D.tint[key])return R2D.tint[key];const im=R2D.tex[k],n=k.startsWith('el')?512:256,c=mk(n,n),g=c.getContext('2d');g.drawImage(im,0,0,n,n);
   g.globalCompositeOperation='multiply';g.fillStyle=col;g.fillRect(0,0,n,n);if(lift){g.globalCompositeOperation='screen';g.fillStyle=`rgba(255,255,255,${lift})`;g.fillRect(0,0,n,n)}g.globalCompositeOperation='source-over';return R2D.tint[key]=c}
@@ -4101,12 +4101,15 @@ function r2dChunk(z,cx,cy){const key=z+':'+cx+':'+cy;let c=R2D.chunks.get(key);i
     for(let sy=0;sy<N;sy++)for(let sx=0;sx<N;sx++){const u=(sx+.5)/SUB-1.5,v=(sy+.5)/SUB-1.5,ix=Math.floor(u),iy=Math.floor(v),fx=u-ix,fy=v-iy,
       a=tg[(iy+2)*GW+ix+2]===t,b=tg[(iy+2)*GW+ix+3]===t,cc=tg[(iy+3)*GW+ix+2]===t,d=tg[(iy+3)*GW+ix+3]===t,
       w=(a*(1-fx)+b*fx)*(1-fy)+(cc*(1-fx)+d*fx)*fy,nz=NZ[sy*N+sx];cov[sy*N+sx]=w;
-      const on=w+nz>.5?255:0,p=(sy*N+sx)*4;md.data[p]=md.data[p+1]=md.data[p+2]=255;md.data[p+3]=on}
+      const on=(t===MB&&TY===R2G_EL?tg[(Math.round(v)+2)*GW+Math.round(u)+2]===t:w+nz>.5)?255:0,p=(sy*N+sx)*4;md.data[p]=md.data[p+1]=md.data[p+2]=255;md.data[p+3]=on}
     mg.putImageData(md,0,0);
     const L=mk(cv2.width,cv2.height),lg=L.getContext('2d');lg.imageSmoothingEnabled=true;lg.drawImage(m,-GP,-GP,N*GP/SUB,N*GP/SUB);
     lg.globalCompositeOperation='source-in';
     if(ready){const [k,col,lift,rp=3]=TY[t],tc=r2dTinted(k,col,lift),pat=lg.createPattern(tc,'repeat'),sc=rp*GP/tc.width;pat.setTransform(new DOMMatrix([sc,0,0,sc,-(x0*GP)%(rp*GP),-(y0*GP)%(rp*GP)]));lg.fillStyle=pat}else lg.fillStyle=GCOL[t]||'#444';
     lg.fillRect(0,0,L.width,L.height);g.drawImage(L,0,0);
+    if(t===MB&&TY===R2G_EL){const B=Math.max(3,Math.round(GP*.14));for(let y=0;y<CS;y++)for(let x=0;x<CS;x++){if(tg[(y+2)*GW+x+2]!==MB)continue;for(const [dx,dy] of N4){const n=tg[(y+2+dy)*GW+x+2+dx];if(n===MB||n===WL||n===VD||n===BR||n===WF)continue;
+      const X=x*GP,Y=y*GP,rc=dx===1?[X+GP-B,Y,B,GP]:dx===-1?[X,Y,B,GP]:dy===1?[X,Y+GP-B,GP,B]:[X,Y,GP,B],gl=dx===1?[X+GP-B,Y,2,GP]:dx===-1?[X+B-2,Y,2,GP]:dy===1?[X,Y+GP-B,GP,2]:[X,Y+B-2,GP,2],sh=dx===1?[X+GP-1,Y,1,GP]:dx===-1?[X,Y,1,GP]:dy===1?[X,Y+GP-1,GP,1]:[X,Y,GP,1];
+      g.fillStyle='#ece5d2';g.fillRect(...rc);g.fillStyle='#c9a650';g.fillRect(...gl);g.fillStyle='rgba(30,40,30,.35)';g.fillRect(...sh)}}}
     if(t===WA){// espuma na margem
       const fm=mk(N,N),fg=fm.getContext('2d'),fd=fg.createImageData(N,N);for(let i=0;i<N*N;i++){const w=cov[i];if(w>.62&&w<.97){/* raso: turquesa clara junto à margem */fd.data[i*4]=120;fd.data[i*4+1]=222;fd.data[i*4+2]=214;fd.data[i*4+3]=Math.round((1-(w-.62)/.35)*95)}else{fd.data[i*4]=fd.data[i*4+1]=fd.data[i*4+2]=238;fd.data[i*4+3]=w>.42&&w<=.62?150:0}}
       fg.putImageData(fd,0,0);g.save();g.imageSmoothingEnabled=true;g.drawImage(fm,-GP,-GP,N*GP/SUB,N*GP/SUB);g.restore()}}
@@ -4140,7 +4143,7 @@ function r2dObj(o,x,y,F){{const SPd=OSPR[o];if(SPd)return r2dSpr(SPd,x,y)}const 
   let pid=null;const U=PROPS.ready&&PROPS.use[o];if(U&&U.every(u=>PROPS.geo[u[0]])){const hv=hash(x,y,77);let a=0;pid=U[U.length-1][0];for(const u of U){a+=u[1];if(hv<a){pid=u[0];break}}}
   const key=o+'|'+vi+'|'+rotq+'|'+(pid||'');let s=R2D.objs.get(key);if(s)return s;if(R2D.budget<=0)return null;R2D.budget--;
   const grp=new THREE.Group(),sc=pid?(big?1.9+vi*.17:.9+vi*.1):(big?1.9+vi*.17:huge?(o===O_COLOSSUS?1.25:1.3):1),rot=rotq>=0?rotq*Math.PI/2:(big||DECO_ROT.has(o))?vi*2.1+.4:0;
-  let GB=OGLB[o];if(GB&&Array.isArray(GB[0]))GB=GB[vi%GB.length];if(GB){const src=VEIL_BLENDER.models&&VEIL_BLENDER.models[GB[0]];if(!src){R2D.budget++;return null}const c=src.scene.clone(true);c.traverse(q=>{if(q.isMesh){const m=q.material;q.material=new THREE.MeshLambertMaterial({map:m.map||null,color:m.color?m.color.clone().multiplyScalar(GB[5]||1.15):0xffffff,side:THREE.DoubleSide});if(GB[5]&&m.map){q.material.emissive.set('#ffffff');q.material.emissiveMap=m.map;q.material.emissiveIntensity=.45}}});c.scale.set(GB[1],GB[1]*GB[3],GB[1]*GB[4]);c.rotation.y=GB[2];grp.add(c)}
+  let GB=OGLB[o];if(GB&&Array.isArray(GB[0]))GB=GB[vi%GB.length];if(GB){const src=VEIL_BLENDER.models&&VEIL_BLENDER.models[GB[0]];if(!src){R2D.budget++;return null}const c=src.scene.clone(true);c.traverse(q=>{if(q.isMesh){const m=q.material;q.material=new THREE.MeshLambertMaterial({map:m.map||null,color:m.color?m.color.clone().multiplyScalar(GB[5]||1.3):0xffffff,side:THREE.DoubleSide});if(m.emissive&&m.emissive.getHex()&&!m.emissiveMap){q.material.emissive.copy(m.emissive);q.material.emissiveIntensity=1.3}else if(m.map){q.material.emissive.set('#ffffff');q.material.emissiveMap=m.map;q.material.emissiveIntensity=GB[5]?.45:.24}}});c.scale.set(GB[1],GB[1]*GB[3],GB[1]*GB[4]);c.rotation.y=GB[2];grp.add(c)}
   else if(pid){const m=PROPS.matS.clone();m.color.setScalar(big?1.38:1);m.clippingPlanes=[new THREE.Plane(new THREE.Vector3(0,1,0),-.12)];/* tira o disco de grama da base */const me=new THREE.Mesh(PROPS.geo[pid],m);grp.add(me)}
   else if(OB3[o]){const gr=new Map();for(const p of OB3[o]){if(p[0]==='blob'&&p[3]<.15&&p[6]<=.12)continue;/* musgo/tufo achatado no chão vira disco estranho na vista 2D */const kk=JSON.stringify(p[8]||{});if(!gr.has(kk))gr.set(kk,[]);gr.get(kk).push(p)}
     for(const parts of gr.values()){const op=parts[0][8]||{},{g}=obMerge(o,parts,()=>false),mt=new THREE.MeshLambertMaterial({vertexColors:true});if(op.tx&&R2TX.has(op.tx))mt.map=texC(op.tx);/* veio da madeira, trama do tecido, metal escovado */if(op.e){mt.emissive.set(op.e);mt.emissiveIntensity=Math.min(1.4,(op.ei||1)*.6)}grp.add(new THREE.Mesh(g,mt))}}
@@ -4179,7 +4182,7 @@ function r2dDetail(g,F,x0,y0,CS,GP){for(let y=0;y<CS;y++)for(let x=0;x<CS;x++){c
 function r2dWall(g,F,x,y,gt,TYW,fade){const [hw,k,col]=TYW[gt],hs=hw*R2D.KH*T,X=x*T,Y=y*T,ready=r2dTexReady(),n=inb(x,y+1)?F.ground[idx(x,y+1)]:VD,brick=gt===WL;
   const w=(dx,dy)=>inb(x+dx,y+dy)&&TYW[F.ground[idx(x+dx,y+dy)]];g.save();if(fade)g.globalAlpha=.45;
   if(!TYW[n]){// face sul: tijolo/rocha em escala real, alinhado ao mundo
-    const tex=ready?r2dTinted(k,col):null;if(tex){const pat=g.createPattern(tex,'repeat'),q=brick?T*1.15/256:T*1.6/256;pat.setTransform(new DOMMatrix([q,0,0,q,0,Y+T-hs]));g.fillStyle=pat}else g.fillStyle=col;g.fillRect(X,Y+T-hs,T,hs);
+    const tex=ready?(brick&&y>=176?r2dTinted('elstone','#fff6e4'):r2dTinted(k,col)):null;if(tex){const pat=g.createPattern(tex,'repeat'),q=brick?T*1.15/256:T*1.6/256;pat.setTransform(new DOMMatrix([q,0,0,q,0,Y+T-hs]));g.fillStyle=pat}else g.fillStyle=col;g.fillRect(X,Y+T-hs,T,hs);
     const gr=g.createLinearGradient(0,Y+T-hs,0,Y+T);gr.addColorStop(0,'rgba(255,240,215,.16)');gr.addColorStop(.12,'rgba(0,0,0,.05)');gr.addColorStop(1,'rgba(0,0,0,.42)');g.fillStyle=gr;g.fillRect(X,Y+T-hs,T,hs);
     if(!w(-1,0)){g.fillStyle='rgba(255,240,220,.12)';g.fillRect(X,Y+T-hs,1.5,hs)}if(!w(1,0)){g.fillStyle='rgba(0,0,0,.3)';g.fillRect(X+T-2,Y+T-hs,2,hs)}}
   // topo: capeamento de pedra escura com chanfro nas bordas externas
@@ -4254,7 +4257,12 @@ function r2dGroundFloor(Hs,g,bt){const {x0,y0,x1,y1}=Hs,cx=(x0+x1+1)/2,ry=g.posi
   const doors=Hs.doors.filter(([dx,dy])=>dy===y1).map(([dx])=>dx+.5-x0-.03),[F1,E1]=r2dFacade(Hs,w,hb,wh,doors,true),[S1]=r2dFacade(Hs,d,hb,wh,[],false),[B1]=r2dFacade({x0:Hs.x0+3,y0:Hs.y0+5,elf:Hs.elf},w,hb,wh,[],false);
   const ET=t=>t,L=o=>new THREE.MeshLambertMaterial(o),front=L({map:ET(F1),emissiveMap:E1,emissive:new THREE.Color('#ffffff'),emissiveIntensity:.85}),side=L({map:ET(S1)}),back=L({map:ET(B1)}),top=L({color:Hs.elf?'#d8d0bc':'#5a4a3a'});
   const me=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),[side,side,top,top,front,back]);me.userData.r2rep=1;me.userData.r2fac=1;me.position.set(0,hb/2-ry,0);me.scale.set(w,hb,d);G.add(me);G.userData.r2fac=1;return G}
-function r2dHouseSpr(i){const A=R2D.hsp||(R2D.hsp=[]);if(A[i])return A[i];if(R2D.budget<=0||!r2dTexReady())return null;const gs=R2D.hs||(R2D.hs=roofMeshes()),g=gs[i];if(!g)return null;
+function r2dHouseSpr(i){const A=R2D.hsp||(R2D.hsp=[]);if(A[i])return A[i];if(R2D.budget<=0||!r2dTexReady())return null;
+  if(HOUSES[i].elf&&VEIL_BLENDER.models&&VEIL_BLENDER.models.El_Casa){const Hs=HOUSES[i],c=VEIL_BLENDER.models.El_Casa.scene.clone(true),roofT=['#ffffff','#d8f0d0','#e4d8ff','#d4e4ff'][(hash(Hs.x0,Hs.y0,15)*4)|0];let ok=true;
+   c.traverse(q=>{if(!q.isMesh)return;const m=q.material;if(m.map&&!(m.map.image&&m.map.image.width))ok=false;const l=new THREE.MeshLambertMaterial({map:m.map||null,color:m.color.clone().multiplyScalar(1.12),side:THREE.DoubleSide});
+    if(m.emissive&&m.emissive.getHex()&&!m.emissiveMap){l.emissive.copy(m.emissive);l.emissiveIntensity=1.25}else if(m.map){l.emissive.set('#ffffff');l.emissiveMap=m.map;l.emissiveIntensity=.16}if(m.name==='telhado'){l.color.multiplyScalar(1.9).multiply(new THREE.Color(roofT));l.emissiveIntensity=.34}if(m.name==='ouro')l.color.multiply(new THREE.Color('#f0e6c0'));q.material=l});
+   if(!ok)return null;R2D.budget-=4;const G=new THREE.Group();G.add(c);if(hash(Hs.x0,Hs.y0,16)<.5)c.scale.x=-1;G.position.set(0,0,(Hs.y0+Hs.y1+1)/2-(Hs.y1+1));G.updateMatrixWorld(true);
+   const sp=r2dTrim(r2dShot(G,768,null,R2D.PPT,1.6));if(sp.cv)sp.cv=r2dInk(sp.cv,null,1.6);sp.cell=768;sp.mg=1.6;G.traverse(q=>{if(q.isMesh)q.material.dispose()});return A[i]=sp}const gs=R2D.hs||(R2D.hs=roofMeshes()),g=gs[i];if(!g)return null;
   const bt=utex('brick');if(!(bt.image&&bt.image.width))return null;const Hs=HOUSES[i];if(!g.userData.r2gf){g.userData.r2gf=1;g.add(r2dGroundFloor(Hs,g,bt));/* o corpo pintado substitui as paredes simples do sobrado */g.children.forEach(o=>{if(o.isMesh&&!o.userData.r2fac&&o.position.y<-.72)o.visible=false})}
   let ok=true;g.traverse(o=>{if(o.isMesh&&!Array.isArray(o.material)&&o.material.map&&!(o.material.map.image&&o.material.map.image.width))ok=false});if(!ok)return null;R2D.budget-=4;
   g.traverse(o=>{if(o.isMesh&&o.material.map&&o.geometry===G3.box&&!o.userData.r2rep){o.userData.r2rep=1;const m=o.material.map.clone();m.needsUpdate=true;m.wrapS=m.wrapT=THREE.RepeatWrapping;m.repeat.set(Math.max(1,o.scale.x/1.1),Math.max(1,o.scale.y/1.1));o.material=o.material.clone();o.material.map=m}});
@@ -4414,7 +4422,7 @@ function render2d(t){const fT0=performance.now();v3hide();V3.active=false;if(!V3
       // sombra de contato
       if(dh>T*.5){ctx.fillStyle='rgba(8,6,10,.28)';ctx.beginPath();ctx.ellipse(x*T+T/2,(y+.55)*T-lo,Math.min(dw*.42,T*1.7),Math.min(dw*.42,T*1.7)*.38,0,0,7);ctx.fill()}
       const fade=dh>T*1.3&&P.ry<y&&hx>dx+dw*.12&&hx<dx+dw*.88&&hy>dy&&hy<dy+dh;
-      L.push({y:(y+.5)*T,f:()=>{if(fade)ctx.globalAlpha=.36;if(sp.big&&WD){const bx=x*T+T/2,by=(y+.5)*T-lo,w=WD*(Math.sin(t*.0016+x*.9+y*.37)+.45*Math.sin(t*.0043+x*1.7));ctx.save();ctx.translate(bx,by);ctx.transform(1,0,w,1,0,0);ctx.drawImage(c,dx-bx,dy-by,dw,dh);ctx.restore()}else ctx.drawImage(c,dx,dy,dw,dh);ctx.globalAlpha=1}})}}
+      L.push({y:(y+.5)*T,f:()=>{if(fade)ctx.globalAlpha=.28;if(sp.big&&WD){const bx=x*T+T/2,by=(y+.5)*T-lo,w=WD*(Math.sin(t*.0016+x*.9+y*.37)+.45*Math.sin(t*.0043+x*1.7));ctx.save();ctx.translate(bx,by);ctx.transform(1,0,w,1,0,0);ctx.drawImage(c,dx-bx,dy-by,dw,dh);ctx.restore()}else ctx.drawImage(c,dx,dy,dw,dh);ctx.globalAlpha=1}})}}
     else if(o===O_STDN||o===O_RUG||o===O_CAVEIN){L.push({y:y*T-T,f:()=>{if(lo){ctx.save();ctx.translate(0,-lo)}ctx.fillStyle=o===O_RUG?'#7a2626':'#0a0705';ctx.fillRect(x*T+3,y*T+3,T-6,T-6);if(o===O_STDN){ctx.fillStyle='#8a6438';for(let k=0;k<3;k++)ctx.fillRect(x*T+5,y*T+6+k*7,T-10,2)}if(lo)ctx.restore()}})}}
   const EL=[];for(const M of V3.ents.values()){const e=M.e;if(!e||M.r2h)continue;const ez=(e===P?P.z:e.z)|0,yb=ez*FLH+(ez?0:TH(M.root.position.x,M.root.position.z)),bx=M.root.position.x*T,by=M.root.position.z*T,lo=r2dLO(bx,by);
     EL.push([M,yb,e===P?-1:Math.max(Math.abs(e.x-P.x),Math.abs(e.y-P.y))]);
@@ -6120,8 +6128,8 @@ const VEIL_NPC_KEYS=['NPC_Mercador','NPC_Corretora','NPC_Sacerdotisa','NPC_Oracu
 VEIL_NPC_KEYS.forEach((k,i)=>{VEIL_BLENDER_DATA[k]=__VD[132+i]||'modelos/'+k+'.glb';VEIL_H[k]=2.2});
 /* cavaleiro novo (espada e escudo próprios presos nas mãos) e Monstro do Pântano (corpo de Vorthak), riggados e animados no Blender */
 VEIL_BLENDER_DATA.Cavaleiro=__VD[100]||'modelos/Cavaleiro.glb';VEIL_BLENDER_DATA.Monstro_Pantano=__VD[101]||'modelos/Monstro_Pantano.glb';VEIL_H.Cavaleiro=2.4;VEIL_H.Monstro_Pantano=3;
-for(const [k,i,h] of [['Mascate',102,2.6],['Grifo',103,3],['Navio',104,5],['Arvore_Elfica1',105,6.5],['Arvore_Elfica2',106,6],['NPC_Elfa',107,2.45],['Arco_Vinhas',109,1],['NPC_Rainha',116,2.65],['P_ArvEst',117,1],['P_ArvAnc',118,1],['P_ArvRet',119,1],['P_Samam',120,1],['P_Cogu',121,1],['P_Toco',122,1],['P_Pedra',123,1],['P_Banco',124,1],['P_Caixa',125,1],['P_Varal',126,1],['P_Mural',127,1],['P_Carro',128,1],['P_Brasa',129,1],['P_Palmas',130,1],['P_Coco',131,1]]){VEIL_BLENDER_DATA[k]=__VD[i]||'modelos/'+k+'.glb';VEIL_H[k]=h}
-Object.assign(VEIL_GLB_USE,{mascate:{k:'Mascate',s:1},grifo:{k:'Grifo',s:1},elftree1:{k:'Arvore_Elfica1',s:1},elftree2:{k:'Arvore_Elfica2',s:1},elftreeG:{k:'Arvore_Elfica1',s:1.3},navio:{k:'Navio',s:1.45,rc:{sat:.85,mul:1.75,lift:.07,tint:[1.1,1,.84]}}});const VEIL_WIDE=new Set(['Mascate','Grifo','Navio','Arvore_Elfica1','Arvore_Elfica2']);
+for(const [k,i,h] of [['Mascate',102,2.6],['Grifo',103,3],['Navio',104,5],['Arvore_Elfica1',105,6.5],['Arvore_Elfica2',106,6],['NPC_Elfa',107,2.45],['Arco_Vinhas',109,1],['NPC_Rainha',116,2.65],['P_ArvEst',117,1],['P_ArvAnc',118,1],['P_ArvRet',119,1],['P_Samam',120,1],['P_Cogu',121,1],['P_Toco',122,1],['P_Pedra',123,1],['P_Banco',124,1],['P_Caixa',125,1],['P_Varal',126,1],['P_Mural',127,1],['P_Carro',128,1],['P_Brasa',129,1],['P_Palmas',130,1],['P_Coco',131,1],['El_Casa',152,1],['El_Poco',153,1],['El_Poste',154,1],['El_Pavilhao',155,1]]){VEIL_BLENDER_DATA[k]=__VD[i]||'modelos/'+k+'.glb';VEIL_H[k]=h}
+Object.assign(VEIL_GLB_USE,{mascate:{k:'Mascate',s:1},grifo:{k:'Grifo',s:1},elftree1:{k:'Arvore_Elfica1',s:1},elftree2:{k:'Arvore_Elfica2',s:1},elftreeG:{k:'Arvore_Elfica1',s:2.2,rc:{sat:1.1,mul:1.35,lift:.06,tint:[.9,1.05,1.15]}},navio:{k:'Navio',s:1.45,rc:{sat:.85,mul:1.75,lift:.07,tint:[1.1,1,.84]}}});const VEIL_WIDE=new Set(['Mascate','Grifo','Navio','Arvore_Elfica1','Arvore_Elfica2']);
 VEIL_GLB_USE.hydraT={k:'Monstro_Pantano',s:2.6,rc:{sat:.85,mul:1.22,lift:.03,tint:[.95,1,.9]}};
 /* montarias: cavalo e urso animados no Blender (arquivo em escala ~0,5 -> BASE_S), lobo riggado, corcel sombrio = cavalo recolorido.
    back = altura do dorso (fração da altura) onde fica a sela */
@@ -6183,20 +6191,20 @@ const O_SPTREE=76,O_SPTWIST=77,O_SPSTUMP=78,O_SPFERN=79,O_SPMUSH=80,O_SPROCK=81,
   O_ELBED=89,O_ELTABLE=90,O_ELCHAIR=91,O_ELSHELF=92,O_ELPLANT=93,O_ELBANNER=94;
 /* n = nome na folha, f = quadros, ms = ms por quadro, ft = pé abaixo do centro do tile, wind = balança ao vento, nf = não espelhar, gen = quadros gerados (chama) */
 const OSPR={[O_SPBRAZ]:{n:'spbraz',f:8,ms:115,ft:.3}};
-const O_ELTREE3=95,VL_BIGG=new Set([O_SPTREE,O_SPTWIST,O_ELTREE3]);BLOCK_O.add(O_ELTREE3);
+const O_ELPAV=96,O_ELTREE3=95,VL_BIGG=new Set([O_SPTREE,O_SPTWIST,O_ELTREE3]);BLOCK_O.add(O_ELTREE3);BLOCK_O.add(O_ELPAV);VL_HUGE.add(O_ELPAV);
 const VL_WIND=new Set([O_ELBANNER,O_SPFERN,O_SPHERB]);for(const o of [O_SPFERN,O_SPMUSH,O_SPSTUMP,O_SPROCK,O_SPCRATE])DECO_ROT.add(o);
 for(const o of [O_SPTREE,O_SPTWIST,O_SPSTUMP,O_SPROCK,O_SPBENCH,O_SPBOARD,O_SPCART,O_SPCRATE,O_SPHERB,O_SPFIRE,O_SPBRAZ,O_ELBED,O_ELTABLE,O_ELSHELF,O_ELPLANT,O_ELBANNER])BLOCK_O.add(o);BLOCK_O.add(O_ELCHAIR);
 for(const o of [O_ELBED,O_ELSHELF,O_ELCHAIR])FROT.add(o);
-Object.assign(VL_GLOW,{[O_SPBRAZ]:[3.4,.9,2.1],[O_SPFIRE]:[3,.9,1.1],[O_SPMUSH]:[1.4,.5,.4],[O_SPTWIST]:[1.5,.55,2.4],[O_SPBOARD]:[1.3,.5,1.7],[O_ELTABLE]:[1.6,.6,.9],[O_ELSHELF]:[1.4,.5,1.3],[O_ELBANNER]:[1,.4,2.8]});
+Object.assign(VL_GLOW,{[O_ELLAMP]:[3.4,.9,2.7],[O_ELPAV]:[3.6,.85,2.6],[O_SPBRAZ]:[3.4,.9,2.1],[O_SPFIRE]:[3,.9,1.1],[O_SPMUSH]:[1.4,.5,.4],[O_SPTWIST]:[1.5,.55,2.4],[O_SPBOARD]:[1.3,.5,1.7],[O_ELTABLE]:[1.6,.6,.9],[O_ELSHELF]:[1.4,.5,1.3],[O_ELBANNER]:[1,.4,2.8]});
 function r2dSpr(d,x,y){const n=d.f||1,fi=n>1?Math.floor(performance.now()/(d.ms||110)+hash(x,y,5)*n)%n:0,fl=!d.nf&&hash(x,y,43)<.5,key=d.n+(n>1?fi:'')+(fl?'f':''),C=R2D.spr||(R2D.spr={});if(C[key])return C[key];
   const I=R2D.sprI||(R2D.sprI={}),nm=d.gen||n<2?d.n:d.n+fi;let im=I[nm];if(!im){im=I[nm]=new Image();im.src=(window.__VDSPR||{})[nm]||''}if(!im.complete||!im.naturalWidth)return null;
   const W=im.naturalWidth,H=im.naturalHeight,cv=mk(W,H),g=cv.getContext('2d');if(fl){g.translate(W,0);g.scale(-1,1)}g.drawImage(im,0,0);
   if(d.gen){/* chama: o topo da sprite redesenhado mais alto e mais claro, em ciclo */const a=.5+.5*Math.sin(fi/n*6.283),fh=H*.45;g.globalCompositeOperation='lighter';g.globalAlpha=.1+.22*a;g.drawImage(im,0,0,W,fh,-W*.03*a,-fh*.1*a,W*(1+.06*a),fh*(1+.1*a));g.globalAlpha=1;g.globalCompositeOperation='source-over'}
   return C[key]={cv,ox:-W/4,oy:(d.ft??.3)*R2D.PPT-H/2,cell:1e-6,mg:1e-6,k:2,big:!!d.wind}}
 /* [modelo, escala, giro]: muro a cada 2 tiles (o tile do meio é um bloqueio invisível), arco sobre a passagem */
-const OGLB={[O_ARCH]:['Arco_Vinhas',2.6,0,1,1.4],[O_ARCHV]:['Arco_Vinhas',2.6,Math.PI/2-.6,1,1.4],
+const OGLB={[O_ARCH]:['Arco_Vinhas',2.6,0,1,1.4],[O_MOONW]:['El_Poco',1,0,1,1,1.25],[O_ELLAMP]:['El_Poste',1.25,0,1,1,1.3],[O_ELPAV]:['El_Pavilhao',.85,0,1,1,1.25],[O_ARCHV]:['Arco_Vinhas',2.6,Math.PI/2-.6,1,1.4],
  /* árvores grandes (×1,9–2,2 do 'big'), palmeiras: variantes escolhidas pelo tile */
- [O_ELTREE3]:['P_ArvEst',3.1,0,1,1],[O_SPTREE]:['P_ArvAnc',2.5,0,1,1],[O_SPTWIST]:['P_ArvRet',2.4,0,1,1],[O_PALM]:[['P_Palmas',2.4,0,1,1,2.2],['P_Coco',2.3,0,1,1,2.2],['P_Coco',2.6,0,1,1,2.2]],
+ [O_ELTREE3]:['P_ArvEst',3.1,0,1,1,1.55],[O_SPTREE]:['P_ArvAnc',2.5,0,1,1,1.6],[O_SPTWIST]:['P_ArvRet',2.4,0,1,1,1.6],[O_PALM]:[['P_Palmas',2.4,0,1,1,2.2],['P_Coco',2.3,0,1,1,2.2],['P_Coco',2.6,0,1,1,2.2]],
  [O_SPFERN]:['P_Samam',.9,0,1,1],[O_SPMUSH]:['P_Cogu',.8,0,1,1],[O_SPSTUMP]:['P_Toco',.95,0,1,1],[O_SPROCK]:['P_Pedra',1.05,0,1,1],
  [O_SPBENCH]:['P_Banco',1,0,1,1],[O_SPCRATE]:['P_Caixa',1.15,0,1,1],[O_SPHERB]:['P_Varal',1.5,0,1,1],[O_SPBOARD]:['P_Mural',1.8,0,1,1],[O_SPCART]:['P_Carro',1.3,0,1,1],[O_SPFIRE]:['P_Brasa',1.35,0,1,1]};/* 5º valor = espessura: muro e arco de lado ficam finos na câmera de cima */
 {const L=(c,e,ei)=>({e,ei}),cy='#6ff0ff',vi='#c090ff',au='#ffb850',gl=(x,y,z,s,c)=>['sph',c===vi?'#e0c8ff':'#c8f8ff',x,y,z,s,s,s,{e:c,ei:2.4}];
@@ -6267,7 +6275,7 @@ function vlBuild(){const F=FL[0],g=F.ground,o=F.obj,pz=F.pz;
   // muralha baixa de pedra em volta da cidade, com arcos de vinhas nas passagens (norte aberto para o cais)
   {const ok=i=>g[i]!==WA&&g[i]!==BR&&g[i]!==MB&&g[i]!==RD&&!o[i];
    ob(160,232,O_ARCH);ob(116,206,O_ARCHV);ob(200,206,O_ARCHV);ob(146,190,O_ARCH);ob(166,190,O_ARCH)}
-  for(const y of [225,229])for(const x of [153,159])ob(x,y,O_ELLAMP);for(let x=124;x<=190;x+=12)if(Math.abs(x-156)>6)for(const y of [205,208])ob(x,y,O_ELLAMP);
+  for(const y of [225,229])for(const x of [153,159])ob(x,y,O_ELLAMP);for(let x=124,k=0;x<=190;x+=12,k++)if(Math.abs(x-156)>6)ob(x,k%2?205:208,O_ELLAMP);/* postes alternando os lados da rua */
   for(const x of [130,143,169,182])ob(x,188,O_ELLAMP);for(const x of [146,152])ob(x,180,O_ELLAMP);ob(158,183,O_ELLAMP);ob(158,186,O_ELLAMP);
   R(118,191,198,230,(x,y,i)=>{if(g[i]===G&&!o[i]&&!HOUSES.some(h=>h.elf&&x>=h.x0-1&&x<=h.x1+1&&y>=h.y0-1&&y<=h.y1+2)&&hash(x,y,931)<.09)o[i]=hash(x,y,932)<.75?O_ELFLOW:O_FLOW});
   for(const [x,y,t] of [
@@ -6284,10 +6292,15 @@ function vlBuild(){const F=FL[0],g=F.ground,o=F.obj,pz=F.pz;
     [188,210,O_SPFERN],[190,221,O_SPFERN],[170,219,O_SPFERN],[192,214,O_SPROCK],[186,224,O_SPSTUMP],[193,209,O_SPMUSH],[120,196,O_ELTREE3],[194,197,O_SPTREE],[121,229,O_SPTREE],[193,229,O_ELTREE3],
     // portões: piras e estandartes de cada lado dos arcos de vinhas
     [157,232,O_SPBRAZ],[163,232,O_SPBRAZ],[155,229,O_ELBANNER],[163,229,O_ELBANNER],[117,204,O_SPBRAZ],[117,209,O_SPBRAZ],[199,204,O_SPBRAZ],[199,209,O_SPBRAZ]])ob(x,y,t);
+  // lagos da lua no bosque, com flores de orvalho na margem
+  for(const [px,py,r] of [[96,197,3],[78,224,2.6],[232,197,3],[252,225,2.4],[60,216,2.3],[276,214,2.6],[108,234,2.4],[214,234,2.6]])R(px-5,py-5,px+5,py+5,(x,y,i)=>{if(pz[i]||!land(i)||g[i]===RD||g[i]===BR||g[i]===MB)return;
+    const d=Math.hypot(x-px,(y-py)*1.25)+(fbm(x/3,y/3,941)-.5)*1.2;if(d<r){g[i]=WA;o[i]=0}else if(d<r+1.4){g[i]=G;o[i]=hash(x,y,942)<.45?O_ELFLOW:0}});
+  // pavilhões nos Jardins dos Cantores, com o entorno livre
+  for(const [px,py] of [[123,216],[189,216]]){for(let y=py-2;y<=py+1;y++)for(let x=px-2;x<=px+2;x++)if(inb(x,y)&&BLOCK_O.has(o[idx(x,y)]))o[idx(x,y)]=0;ob(px,py,O_ELPAV)}
   // 6. Bosque de Sylvaris: árvores lunares, carvalhos, cogumelos, flores de orvalho, cristais e arcos em ruínas
   R(0,VL.Y0,W-1,H-1,(x,y,i)=>{if(pz[i]||!land(i)||g[i]===RD||g[i]===BR||g[i]===MB||o[i])return;const f=fbm(x/7,y/7,902),h=hash(x,y,903);
     if(g[i]===SA){if(h<.03)o[i]=O_PALM;return}
-    if(h<.012)o[i]=h<.004?O_SPTREE:h<.006?O_SPTWIST:O_ELTREE3;else if(f>.55&&h<.075)o[i]=h<.04?O_ELTREE3:h<.065?O_SPTREE:O_SPTWIST;else if(f>.55&&h<.12)o[i]=h<.1?O_SPFERN:O_BUSH;else if(h<.035)o[i]=h<.02?O_SPFERN:h<.025?O_SPROCK:h<.029?O_SPSTUMP:h<.031?O_SPMUSH:O_SPFERN;else if(h<.09)o[i]=O_ELFLOW;else if(h<.095)o[i]=O_CRYST;else if(h<.098)o[i]=O_ARCH;else if(h<.11)o[i]=O_BUSH});
+    if(h<.012)o[i]=h<.004?O_SPTREE:h<.006?O_SPTWIST:O_ELTREE3;else if(f>.6&&h<.05)o[i]=h<.03?O_ELTREE3:h<.044?O_SPTREE:O_SPTWIST;else if(f>.55&&h<.11)o[i]=h<.09?O_SPFERN:O_SPROCK;else if(h<.035)o[i]=h<.02?O_SPFERN:h<.025?O_SPROCK:h<.029?O_SPSTUMP:h<.031?O_SPMUSH:O_SPFERN;else if(h<.09)o[i]=O_ELFLOW;else if(h<.094)o[i]=O_CRYST;else if(h<.1)o[i]=O_SPFERN});
   // nada encostado nas trilhas
   R(0,VL.Y0,W-1,H-1,(x,y,i)=>{if(g[i]!==RD)return;for(const [dx,dy] of N4){const j=idx(x+dx,y+dy);if(inb(x+dx,y+dy)&&BLOCK_O.has(o[j])&&o[j]!==O_ELLAMP)o[j]=0}});
   ZONES[17]='Lunareth, Baía da Lua';ZONES[18]='Bosque de Sylvaris';
@@ -6317,7 +6330,7 @@ function vdNewPopulate(){if(ents.some(e=>e.vdT))return;withFloor(0,()=>{
   E('smith','Ferreiro Thalanor',180,215,'NPC_Ferreiro',{hue:180,sat:.6,mul:1.12});E('bank','Tesoureiro Caelir',140,227,'NPC_Corretora',{hue:160,mul:1.1});E('depot','Guardião dos Cofres Ilvar',172,227,'NPC_Cidadao',{hue:170,sat:.8});
   E('stable','Domadora de Cervos Nimue',150,229,'NPC_Elfa',{hue:70,sat:.85});
   const TR=(t,x,y)=>S(t,'',x,y,{kind:'deco'});TR('elftreeG',156,215);
-  [[126,200],[186,200],[122,216],[190,216],[141,203],[171,203],[144,213],[168,213],[150,233],[162,233],[128,227],[184,227],[124,191],[188,191]].forEach(([x,y],k)=>TR(k%2?'elftree2':'elftree1',x,y));
+  [[126,200],[186,200],[141,203],[171,203],[144,213],[168,213],[150,233],[162,233],[128,227],[184,227],[124,191],[188,191]].forEach(([x,y],k)=>TR(k%2?'elftree2':'elftree1',x,y));
   for(let k=0,c=0;k<5000&&c<34;k++){const x=30+Math.floor(hash(k,7,951)*252),y=180+Math.floor(hash(k,8,952)*66),i=idx(x,y),d=Math.hypot(x-156,y-210);
     if(d<46||d>115||zone[i]!==18||FL[0].pz[i]||!passable(x,y)||occ[i])continue;if(TR(hash(k,9,953)<.5?'elftree1':'elftree2',x,y))c++}
   const lines=['A Árvore Lunar canta quando a lua está cheia. Escute.','Humanos... faz um século que um navio não atracava aqui.','Não colha as flores de orvalho: elas guardam a luz dos que partiram.','O Véu nasceu longe daqui, mas a sombra dele já toca o bosque.','Os cervos espectrais guiam os perdidos. Ou os perdem de vez.','Aelyndra viu o seu rosto no Poço da Lua antes de você chegar.'];
@@ -6603,7 +6616,7 @@ function rgb(c){
  const known={white:[255,255,255],black:[0,0,0],transparent:[0,0,0]};return known[c.toLowerCase()]||[255,255,255];
 }
 
-console.info('VALDREN_BUILD: lunareth-mobile-full-r17');
+console.info('VALDREN_BUILD: velmora-redesign-r19');
 /* ---------- boot ---------- */
 function start(data){
   buildIcons();genMap();decorate();thinTrees();vd3ScatterDecor();vd5ExpandWorld();veilRebuildWorld();auBuild();vlBuild();buildHeights();bakeIcons3();
